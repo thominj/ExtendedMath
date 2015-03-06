@@ -1,6 +1,8 @@
 ExtendedMath
 ============
 
+[![Build Status](https://api.travis-ci.org/repositories/mcordingley/ExtendedMath.svg)](https://travis-ci.org/mcordingley/ExtendedMath)
+
 For all of those math functions that PHP lacks.
 
 ## Installation
