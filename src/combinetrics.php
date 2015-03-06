@@ -39,7 +39,14 @@ if (!function_exists('npr')) {
      * @static
      */
     function npr($n, $r) {
-        return fact($n) / fact($n - $r);
+        $x = 1;
+        $min = $n - $r;
+        
+        for ($i = $n; $i > $min; $i--) {
+            $x *= $i;
+        }
+        
+        return $x;
     }
 }
 
