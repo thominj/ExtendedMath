@@ -14,3 +14,10 @@ Add this to your composer.json and update:
 This will eventually switch over to using semantic versioning,
 but it makes little sense to do so while this is in early
 development.
+
+## Use
+
+This package introduces a number of mathematical functions into the global PHP
+namespace. It aspires to be a shim for these functions in the language. Functions
+are separated into different files by type and are all commented with phpdoc
+blocks. Please see the individual files for functional documentation.
