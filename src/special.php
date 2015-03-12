@@ -110,10 +110,7 @@ if (!function_exists('ierf')) {
             // instead of the correct positive infinity.
             // 
             // p = Double.POSITIVE_INFINITY;
-            // 
-            // [PHP version comment]
-            // what would be the appropriate value here?
-            $p = (float) INFINITY; 
+            $p = INF; 
         }
       
         return $p * $x;
