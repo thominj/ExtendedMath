@@ -1,5 +1,226 @@
 <?php
 
+if (!function_exists('lanczos')) {
+    /**
+     * lanczos
+     * 
+     * Returns the Lanczos approximation used to compute the gamma function.
+     * The Lanczos approximation is related to the Gamma function by the
+     * following equation:
+     * 
+     * gamma(x) = sqrt(2 * pi) / x * (x + g + 0.5) ^ (x + 0.5)
+     *                   * exp(-x - g - 0.5) * lanczos(x)
+     * 
+     * where `g` is the Lanczos constant.
+     *
+     * @param float $x
+     * @return float
+     */
+    function lanczos($x)
+    {
+        $LANCZOS = [
+            0.99999999999999709182,
+            57.156235665862923517,
+            -59.597960355475491248,
+            14.136097974741747174,
+            -0.49191381609762019978,
+            .33994649984811888699e-4,
+            .46523628927048575665e-4,
+            -.98374475304879564677e-4,
+            .15808870322491248884e-3,
+            -.21026444172410488319e-3,
+            .21743961811521264320e-3,
+            -.16431810653676389022e-3,
+            .84418223983852743293e-4,
+            -.26190838401581408670e-4,
+            .36899182659531622704e-5,
+        ];
+        
+        $sum = 0.0;
+        
+        for ($i = count($LANCZOS) - 1; $i > 0; --$i) {
+            $sum += $LANCZOS[$i] / ($x + $i);
+        }
+        
+        return $sum + $LANCZOS[0];
+    }
+}
+
+if (!function_exists('invGamma1pm1')) {
+    /**
+     * invGamma1pm1
+     * 
+     * Returns the value of 1 / gamma(1 + x) - 1 for -0.5 <= x <=
+     * 1.5. This implementation is based on the double precision
+     * implementation in the NSWC Library of Mathematics Subroutines.
+     *
+     * @param float $x
+     * @return float 1.0 / Gamma(1.0 + x) - 1.0
+     * @throws InvalidArgumentException if $x < -0.5
+     * @throws InvalidArgumentException if $x > 1.5
+     */
+    function invGamma1pm1($x)
+    {
+        if ($x < -0.5) {
+            throw new InvalidArgumentException("Value $x too small.");
+        }
+        
+        if ($x > 1.5) {
+            throw new  InvalidArgumentException("Value $x too large.");
+        }
+
+        $t = $x <= 0.5 ? $x : ($x - 0.5) - 0.5;
+        
+        if ($t < 0.0) {
+            $a =  .611609510448141581788E-08 + $t * .624730830116465516210E-08;
+            $b =  .195755836614639731882E-09;
+            $b = -.607761895722825260739E-07 + $t * $b;
+            $b =  .992641840672773722196E-06 + $t * $b;
+            $b = -.643045481779353022248E-05 + $t * $b;
+            $b = -.851419432440314906588E-05 + $t * $b;
+            $b =  .493944979382446875238E-03 + $t * $b;
+            $b =  .266205348428949217746E-01 + $t * $b;
+            $b =  .203610414066806987300E+00 + $t * $b;
+            $b = 1.0 + $t * $b;
+
+            $c = -.205633841697760710345015413002057E-06 + $t * ($a / $b);
+            $c =  .113302723198169588237412962033074E-05 + $t * $c;
+            $c = -.125049348214267065734535947383309E-05 + $t * $c;
+            $c = -.201348547807882386556893914210218E-04 + $t * $c;
+            $c =  .128050282388116186153198626328164E-03 + $t * $c;
+            $c = -.215241674114950972815729963053648E-03 + $t * $c;
+            $c = -.116516759185906511211397108401839E-02 + $t * $c;
+            $c =  .721894324666309954239501034044657E-02 + $t * $c;
+            $c = -.962197152787697356211492167234820E-02 + $t * $c;
+            $c = -.421977345555443367482083012891874E-01 + $t * $c;
+            $c =  .166538611382291489501700795102105E+00 + $t * $c;
+            $c = -.420026350340952355290039348754298E-01 + $t * $c;
+            $c = -.655878071520253881077019515145390E+00 + $t * $c;
+            $c = -.422784335098467139393487909917598E+00 + $t * $c;
+            
+            if ($x > 0.5) {
+                $ret = $t * $c / $x;
+            } else {
+                $ret = $x * (($c + 0.5) + 0.5);
+            }
+        } else {
+            $p =  .4343529937408594255178E-14;
+            $p = -.1249441572276366213222E-12 + $t * $p;
+            $p =  .1572833027710446286995E-11 + $t * $p;
+            $p =  .4686843322948848031080E-1  + $t * $p;
+            $p =  .6820161668496170657918E-09 + $t * $p;
+            $p =  .6871674113067198736152E-08 + $t * $p;
+            $p =  .6116095104481415817861E-08 + $t * $p;
+
+            $q =  .2692369466186361192876E-03;
+            $q =  .4956830093825887312020E-02 + $t * $q;
+            $q =  .5464213086042296536016E-01 + $t * $q;
+            $q =  .3056961078365221025009E+00 + $t * $q;
+            $q = 1.0 + $t * $q;
+
+            $c = -.205633841697760710345015413002057E-06 + ($p / $q) * $t;
+            $c =  .113302723198169588237412962033074E-05 + $t * $c;
+            $c = -.125049348214267065734535947383309E-05 + $t * $c;
+            $c = -.201348547807882386556893914210218E-04 + $t * $c;
+            $c =  .128050282388116186153198626328164E-03 + $t * $c;
+            $c = -.215241674114950972815729963053648E-03 + $t * $c;
+            $c = -.116516759185906511211397108401839E-02 + $t * $c;
+            $c =  .721894324666309954239501034044657E-02 + $t * $c;
+            $c = -.962197152787697356211492167234820E-02 + $t * $c;
+            $c = -.421977345555443367482083012891874E-01 + $t * $c;
+            $c =  .166538611382291489501700795102105E+00 + $t * $c;
+            $c = -.420026350340952355290039348754298E-01 + $t * $c;
+            $c = -.655878071520253881077019515145390E+00 + $t * $c;
+            $c =  .577215664901532860606512090082402E+00 + $t * $c;
+
+            if ($x > 0.5) {
+                $ret = ($t / $x) * (($c - 0.5) - 0.5);
+            } else {
+                $ret = $x * $c;
+            }
+        }
+
+        return $ret;
+    }
+}
+
+if (!function_exists('gamma')) {
+    /**
+     * gamma
+     * 
+     * Returns the value of gamma(x). Based on the NSWC Library of
+     * Mathematics Subroutines double precision implementation.
+     *
+     * @param float $x
+     * @return
+     */
+    function gamma($x) {
+        if ($x == round($x) && $x <= 0.0) {
+            return NAN;
+        }
+
+        $absX = abs($x);
+        
+        if ($absX <= 20.0) {
+            if ($x >= 1.0) {
+                /*
+                 * From the recurrence relation
+                 * Gamma(x) = (x - 1) * ... * (x - n) * Gamma(x - n),
+                 * then
+                 * Gamma(t) = 1 / [1 + invGamma1pm1(t - 1)],
+                 * where t = x - n. This means that t must satisfy
+                 * -0.5 <= t - 1 <= 1.5.
+                 */
+                $prod = 1.0;
+                $t = $x;
+                
+                while ($t > 2.5) {
+                    $t -= 1.0;
+                    $prod *= $t;
+                }
+                
+                $ret = $prod / (1.0 + invGamma1pm1($t - 1.0));
+            } else {
+                /*
+                 * From the recurrence relation
+                 * Gamma(x) = Gamma(x + n + 1) / [x * (x + 1) * ... * (x + n)]
+                 * then
+                 * Gamma(x + n + 1) = 1 / [1 + invGamma1pm1(x + n)],
+                 * which requires -0.5 <= x + n <= 1.5.
+                 */
+                $prod = $x;
+                $t = $x;
+                
+                while ($t < -0.5) {
+                    $t += 1.0;
+                    $prod *= $t;
+                }
+                
+                $ret = 1.0 / ($prod * (1.0 + invGamma1pm1($t)));
+            }
+        } else {
+            $y = $absX + (607.0 / 128.0) + 0.5;
+            $gammaAbs = M_SQRT2PI / $x * pow($y, $absX + 0.5) * exp(-$y) * lanczos($absX);
+            
+            if ($x > 0.0) {
+                $ret = $gammaAbs;
+            } else {
+                /*
+                 * From the reflection formula
+                 * Gamma(x) * Gamma(1 - x) * sin(pi * x) = pi,
+                 * and the recurrence relation
+                 * Gamma(1 - x) = -x * Gamma(-x),
+                 * it is found
+                 * Gamma(x) = -pi / [x * sin(pi * x) * Gamma(-x)].
+                 */
+                $ret = -M_PI / ($x * sin(M_PI * $x) * $gammaAbs);
+            }
+        }
+        
+        return $ret;
+    }
+}
+
 if (!function_exists('ierf')) {
     /**
      * ierf
@@ -11,7 +232,8 @@ if (!function_exists('ierf')) {
      * @param float $x Argument to the real error function
      * @return float A value between -1 and 1
      */
-    function ierf($x) {
+    function ierf($x)
+    {
         /* Code borrowed from the Apache Project Commons Math
          * see http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/special/Erf.html
          * and http://svn.apache.org/repos/asf/commons/proper/math/trunk/src/main/java/org/apache/commons/math3/special/Erf.java
@@ -31,7 +253,7 @@ if (!function_exists('ierf')) {
         // it must NOT be simplified as 1.0 - x * x as this
         // would induce rounding errors near the boundaries +/-1
 
-        $w = - log((1.0 - $x) * (1.0 + $x));
+        $w = -log((1.0 - $x) * (1.0 + $x));
       
         if ($w < 6.25) {
             $w = $w - 3.125;
